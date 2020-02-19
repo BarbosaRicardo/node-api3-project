@@ -1,35 +1,32 @@
 const express = require('express');
+const helmet = require("helmet");
+const postRouter = require("./posts/postRouter");
+const userRouter = require("./users/userRouter");
 
+//3rd party mw
 const server = express();
+const morgan = require("morgan");
 
-server.get('/', (req, res) => {
-  res.send(`2>Let's write some middleware!</h2>`);
-});
+//3rd party mw
+server.use(helmet());
+server.use(morgan);
 
-//custom middleware
+//global mw
+server.use(express.json());
+server.use(logger);
+server.use(userRouter)
+server.use(postRouter)
 
-/**
- * logger logs to the console the following information 
- * about each request:
- * request method
- * request url
- * and a timestamp
- * 
- * This mw runs on every request made to the API
- */
+module.exports = server;
 
- //create a mw function for requestTime
-//  var requestTime = function(req, res, next) {
-//    req.requestTime = Date.now()
-//    next()
-//  }
-
-function logger(req, res, next) {}
-  const { method, url, requestTime } = req
-  const agent = req.get("User-Agent")
-  req.requestTime = Date.now()
-
-  console.log(` ${method} ${url} ${requestTime} ${agent}`)
+//custom mw
+function logger(req, res, next) {
+  console.log(
+    `${req.method} Request to ${req.originalUrl} 
+      at ${new Date().toISOString()}`
+  );
+  next();
+}
 
   
-module.exports = server;
+
